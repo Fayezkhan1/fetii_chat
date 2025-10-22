@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const GEMINI_API_KEY = 'AIzaSyD_i0_KWNpOr6w0-q9qPD6ALbFxuANnXw8'
-const GEOCODING_API_KEY = 'AIzaSyA3Zg8F6dYjdzRuWP76riXfGRUFZoPZG3Y'
+const GEMINI_API_KEY = ''
+const GEOCODING_API_KEY = ''
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
 
