@@ -112,7 +112,7 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
 
     // Send to n8n chat webhook
     try {
-      const response = await fetch('/webhook/1203a737-5c17-4c8e-9730-37dc59e8f34e/chat', {
+      const response = await fetch('https://fetii.app.n8n.cloud/webhook/1203a737-5c17-4c8e-9730-37dc59e8f34e/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
