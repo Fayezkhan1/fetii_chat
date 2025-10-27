@@ -126,25 +126,42 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
       })
 
       if (response.ok) {
-        const data = await response.json()
+        // Handle streaming response
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+        let fullResponse = ''
 
-        // Remove typing indicator and add bot response
+        // Remove typing indicator and add empty bot message
+        const botMessageId = Date.now() + 2
         setMessages(prev => {
           const withoutTyping = prev.filter(msg => msg.type !== 'typing')
-          const cleanText = formatBotResponse(data.output || data.message || 'Response received successfully.')
-
-          const botMessage = {
-            id: Date.now() + 2,
+          return [...withoutTyping, {
+            id: botMessageId,
             type: 'bot',
-            text: cleanText,
+            text: '',
             timestamp: new Date()
-          }
-          return [...withoutTyping, botMessage]
+          }]
         })
 
-        // Trigger map/chart updates
-        if (onMessageSent && data.output) {
-          onMessageSent(data.output)
+        // Read stream chunks
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          const chunk = decoder.decode(value, { stream: true })
+          fullResponse += chunk
+
+          // Update the bot message with streaming text
+          setMessages(prev => prev.map(msg => 
+            msg.id === botMessageId 
+              ? { ...msg, text: formatBotResponse(fullResponse) }
+              : msg
+          ))
+        }
+
+        // Trigger map/chart updates with final response
+        if (onMessageSent && fullResponse) {
+          onMessageSent(fullResponse)
         }
       } else {
         throw new Error(`HTTP ${response.status}`)
