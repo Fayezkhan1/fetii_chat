@@ -149,11 +149,35 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
           if (done) break
 
           const chunk = decoder.decode(value, { stream: true })
-          fullResponse += chunk
+
+          // Parse streaming chunks to extract content
+          const lines = chunk.split('\n')
+          for (const line of lines) {
+            if (line.trim()) {
+              try {
+                const parsed = JSON.parse(line)
+                // Extract content from different possible formats
+                if (parsed.type === 'item' && parsed.content) {
+                  fullResponse += parsed.content
+                } else if (parsed.content) {
+                  fullResponse += parsed.content
+                } else if (parsed.text) {
+                  fullResponse += parsed.text
+                } else if (parsed.output) {
+                  fullResponse += parsed.output
+                }
+              } catch (e) {
+                // If not JSON, treat as plain text
+                if (!line.includes('"type":') && !line.includes('"metadata":')) {
+                  fullResponse += line
+                }
+              }
+            }
+          }
 
           // Update the bot message with streaming text
-          setMessages(prev => prev.map(msg => 
-            msg.id === botMessageId 
+          setMessages(prev => prev.map(msg =>
+            msg.id === botMessageId
               ? { ...msg, text: formatBotResponse(fullResponse) }
               : msg
           ))
