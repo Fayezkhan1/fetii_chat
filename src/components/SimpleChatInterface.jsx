@@ -63,9 +63,9 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
     {
       id: 1,
       type: 'bot',
-      text: 'Yo! 🤘 What\'s the vibe today?\n\nI\'ve got the inside scoop on where Austin gets wild - from late-night taco runs to where the cool kids hang out! 🌮✨',
+      text: 'Yo! 🤘 What\'s the vibe today?\n\nFind out more about Austin rides',
       timestamp: new Date(),
-      showSuggestions: true
+      showSuggestions: false
     }
   ])
 
@@ -79,23 +79,9 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
 
 
 
-  const sampleQueries = [
-    "What are the top 5 drop-off locations? 📍",
-    "Show me the busiest pickup spots 🚗",
-    "What are the peak hours for rides? ⏰",
-    "Find popular entertainment destinations 🎵"
-  ]
 
-  const handleSuggestionClick = (query) => {
-    setMessage(query)
-    // Auto-submit the query
-    setTimeout(() => {
-      const form = document.querySelector('form')
-      if (form) {
-        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))
-      }
-    }, 100)
-  }
+
+
 
 
   const handleSubmit = async (e) => {
@@ -113,13 +99,8 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
       timestamp: new Date()
     }
 
-    // Hide suggestions after first user message and add message
-    setMessages(prev => {
-      const updated = prev.map(msg =>
-        msg.showSuggestions ? { ...msg, showSuggestions: false } : msg
-      )
-      return [...updated, userMessage]
-    })
+    // Add user message
+    setMessages(prev => [...prev, userMessage])
 
     // Add typing indicator immediately
     const typingIndicator = {
@@ -242,45 +223,7 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
                     </div>
                   </div>
 
-                  {/* Show sample queries for the first bot message */}
-                  {msg.showSuggestions && (
-                    <div style={{
-                      marginTop: '12px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '8px'
-                    }}>
-                      {sampleQueries.map((query, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleSuggestionClick(query)}
-                          style={{
-                            padding: '12px 16px',
-                            background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-                            border: 'none',
-                            borderRadius: '20px',
-                            fontSize: '13px',
-                            color: 'white',
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                            transition: 'all 0.3s ease',
-                            boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
-                            fontWeight: '500'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.transform = 'translateY(-2px)'
-                            e.target.style.boxShadow = '0 6px 16px rgba(139, 92, 246, 0.4)'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.transform = 'translateY(0)'
-                            e.target.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.3)'
-                          }}
-                        >
-                          {query}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+
                 </>
               )}
             </div>
