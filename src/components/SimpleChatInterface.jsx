@@ -143,7 +143,10 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
           }]
         })
 
-        // Read stream chunks
+        // Read stream chunks with throttling
+        let lastUpdateTime = 0
+        const UPDATE_THROTTLE = 150 // Update every 150ms for smoother experience
+
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
@@ -175,13 +178,24 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
             }
           }
 
-          // Update the bot message with streaming text
-          setMessages(prev => prev.map(msg =>
-            msg.id === botMessageId
-              ? { ...msg, text: formatBotResponse(fullResponse) }
-              : msg
-          ))
+          // Throttle updates to reduce lag
+          const now = Date.now()
+          if (now - lastUpdateTime > UPDATE_THROTTLE) {
+            setMessages(prev => prev.map(msg =>
+              msg.id === botMessageId
+                ? { ...msg, text: formatBotResponse(fullResponse) }
+                : msg
+            ))
+            lastUpdateTime = now
+          }
         }
+
+        // Final update to ensure complete text is shown
+        setMessages(prev => prev.map(msg =>
+          msg.id === botMessageId
+            ? { ...msg, text: formatBotResponse(fullResponse) }
+            : msg
+        ))
 
         // Trigger map/chart updates with final response
         if (onMessageSent && fullResponse) {
