@@ -143,9 +143,28 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
           }]
         })
 
-        // Read stream chunks with throttling
+        // Read stream chunks with word-by-word simulation
         let lastUpdateTime = 0
-        const UPDATE_THROTTLE = 150 // Update every 150ms for smoother experience
+        let lastDisplayedLength = 0
+        const UPDATE_THROTTLE = 150
+
+        // Function to simulate word-by-word typing
+        const simulateTyping = (messageId, fullText, startIndex) => {
+          const words = fullText.slice(startIndex).split(' ')
+          let currentIndex = startIndex
+
+          words.forEach((word, index) => {
+            setTimeout(() => {
+              const textUpToWord = fullText.slice(0, currentIndex + word.length + (index > 0 ? 1 : 0))
+              setMessages(prev => prev.map(msg =>
+                msg.id === messageId
+                  ? { ...msg, text: formatBotResponse(textUpToWord) }
+                  : msg
+              ))
+              currentIndex += word.length + 1
+            }, index * 100) // 100ms delay between words
+          })
+        }
 
         while (true) {
           const { done, value } = await reader.read()
@@ -178,14 +197,16 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
             }
           }
 
-          // Throttle updates to reduce lag
+          // Simulate word-by-word typing effect
           const now = Date.now()
           if (now - lastUpdateTime > UPDATE_THROTTLE) {
-            setMessages(prev => prev.map(msg =>
-              msg.id === botMessageId
-                ? { ...msg, text: formatBotResponse(fullResponse) }
-                : msg
-            ))
+            // Get the new content that was just added
+            const newContent = fullResponse.slice(lastDisplayedLength || 0)
+            if (newContent) {
+              // Simulate typing word by word
+              simulateTyping(botMessageId, fullResponse, lastDisplayedLength || 0)
+              lastDisplayedLength = fullResponse.length
+            }
             lastUpdateTime = now
           }
         }
