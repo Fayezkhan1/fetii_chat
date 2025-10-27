@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 
-// Function to format bot response text
+// --- CONSTANTS ---
+// The webhook path for the primary Webhook node (e75301a4-2613-46cf-8a43-d681659cdd0d)
+// ElevenLabs Agent ID (Retained from your original code)
+
+
+// Function to format bot response text (Kept for consistency)
 const formatBotResponse = (text) => {
   // Keep markdown formatting for bold text (venue names)
   let formatted = text.trim()
@@ -49,16 +54,8 @@ const renderMarkdownText = (text) => {
   })
 }
 
-// Main App Component (Single File Mandate)
-export default function App() {
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <SimpleChatInterface onMessageSent={() => {}} isAnalyzing={false} />
-    </div>
-  )
-}
-
 function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
+
   const chatContainerRef = useRef(null)
 
   const [message, setMessage] = useState('')
@@ -66,7 +63,7 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
     {
       id: 1,
       type: 'bot',
-      text: "Yo! 🤘 What's the vibe today?\n\nFind out more about Austin rides",
+      text: 'Yo! 🤘 What\'s the vibe today?\n\nFind out more about Austin rides',
       timestamp: new Date(),
       showSuggestions: false
     }
@@ -79,12 +76,12 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
     }
   }, [messages])
 
-  // Mock function for Firebase/Auth setup (not used, but good for context)
-  // useEffect(() => {
-  //   const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-  //   const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-  //   console.log('Firebase initialized with App ID:', appId);
-  // }, []);
+
+
+
+
+
+
 
 
   const handleSubmit = async (e) => {
@@ -115,9 +112,7 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
 
     // Send to n8n chat webhook
     try {
-      // Using a placeholder webhook URL for safety
-      const webhookUrl = 'https://fetii.app.n8n.cloud/webhook/1203a737-5c17-4c8e-9730-37dc59e8f34e/chat';
-      const response = await fetch(webhookUrl, {
+      const response = await fetch('https://fetii.app.n8n.cloud/webhook/1203a737-5c17-4c8e-9730-37dc59e8f34e/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -152,7 +147,6 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
           onMessageSent(data.output)
         }
       } else {
-        // --- FIX 1: Template literal must be enclosed in backticks (`) ---
         throw new Error(`HTTP ${response.status}`)
       }
 
@@ -175,159 +169,13 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
 
   return (
     <>
-      <style>{`
-        /* Tailwind is assumed to be available */
-        .chat-interface {
-          display: flex;
-          flex-direction: column;
-          width: 100%;
-          max-width: 420px;
-          height: 90vh;
-          max-height: 800px;
-          border-radius: 1.5rem;
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-          background-color: #ffffff;
-          overflow: hidden;
-        }
-        .chat-header {
-          padding: 1rem;
-          background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%); /* Purple Gradient */
-          color: white;
-          font-weight: 700;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .chat-logo {
-          width: 80px;
-          height: auto;
-          filter: brightness(0) invert(1);
-        }
-        .chat-messages {
-          flex-grow: 1;
-          overflow-y: auto;
-          padding: 1rem;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          background-color: #f9fafb;
-        }
-        .message {
-          padding: 10px 14px;
-          border-radius: 16px;
-          font-size: 14px;
-          line-height: 1.4;
-          position: relative;
-          max-width: 85%;
-        }
-        .message-content {
-          white-space: pre-wrap;
-        }
-        .message.user {
-          background-color: #8b5cf6; /* Main brand color */
-          color: white;
-          border-bottom-right-radius: 4px;
-          align-self: flex-end;
-          margin-left: auto;
-        }
-        .message.bot {
-          background-color: #e5e7eb;
-          color: #1f2937;
-          border-bottom-left-radius: 4px;
-          align-self: flex-start;
-          margin-right: auto;
-        }
-        .message-time {
-          font-size: 10px;
-          opacity: 0.6;
-          margin-top: 4px;
-          text-align: right;
-          color: inherit;
-        }
-        .message.bot .message-time {
-          text-align: left;
-        }
-        
-        /* Typing Indicator CSS */
-        .loading-message {
-          min-height: 24px;
-          align-items: center;
-          gap: 8px;
-        }
-        .typing-indicator span {
-          display: inline-block;
-          width: 8px;
-          height: 8px;
-          background-color: #8b5cf6;
-          border-radius: 50%;
-          margin: 0 2px;
-          animation: bounce 1.2s infinite ease-in-out;
-        }
-        .typing-indicator span:nth-child(2) {
-          animation-delay: -0.4s;
-        }
-        .typing-indicator span:nth-child(3) {
-          animation-delay: -0.8s;
-        }
-        @keyframes bounce {
-          0%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-8px); }
-        }
-
-        .chat-input-form {
-          display: flex;
-          padding: 1rem;
-          border-top: 1px solid #e5e7eb;
-          background-color: #ffffff;
-        }
-        .chat-input {
-          flex-grow: 1;
-          padding: 0.75rem 1rem;
-          border: 1px solid #d1d5db;
-          border-radius: 9999px;
-          font-size: 16px;
-          outline: none;
-          transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .chat-input:focus {
-          border-color: #8b5cf6;
-          box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
-        }
-        .send-btn {
-          margin-left: 0.5rem;
-          padding: 0.75rem 1.25rem;
-          background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-          color: white;
-          border: none;
-          border-radius: 9999px;
-          font-size: 18px;
-          cursor: pointer;
-          transition: transform 0.1s, opacity 0.2s;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .send-btn:hover:not(:disabled) {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .send-btn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          background: #d1d5db;
-        }
-      `}</style>
       <div className="chat-interface">
         {/* Header */}
         <div className="chat-header">
-          {/* Using a placeholder image URL */}
           <img
-            src="https://placehold.co/80x40/8b5cf6/ffffff?text=FETII+AI"
+            src="/fetii-logo.png"
             alt="Fetii AI"
             className="chat-logo"
-            // Adding a filter to make the text visible against the purple background
-            style={{ filter: 'none', borderRadius: '4px' }}
           />
         </div>
 
@@ -366,7 +214,6 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
                 </div>
               ) : (
                 <>
-                  {/* --- FIX 2: Template literal must be enclosed in backticks (`) --- */}
                   <div className={`message ${msg.type}`}>
                     <div className="message-content">
                       {renderMarkdownText(msg.text)}
@@ -394,6 +241,8 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
             className="chat-input"
           />
 
+          {/* REMOVED CUSTOM VOICE BUTTON */}
+
           <button
             type="submit"
             disabled={!message.trim() || isAnalyzing}
@@ -410,3 +259,5 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
   )
 
 }
+
+export default SimpleChatInterface
