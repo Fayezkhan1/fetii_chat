@@ -1,85 +1,89 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+
+// --- CONSTANTS ---
+// The webhook path for the primary Webhook node (e75301a4-2613-46cf-8a43-d681659cdd0d)
+// ElevenLabs Agent ID (Retained from your original code)
+
+
+// Function to format bot response text (Kept for consistency)
+const formatBotResponse = (text) => {
+  // Keep markdown formatting for bold text (venue names)
+  let formatted = text.trim()
+
+  // Logic for formatting numbered lists (Kept from original code)
+  if (formatted.includes('1.') && formatted.includes('2.')) {
+    const parts = formatted.split(/(\d+\.\s)/)
+    let result = ''
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i]
+      if (/^\d+\.\s$/.test(part)) {
+        result += '\n\n' + part
+      } else if (i > 0 && /^\d+\.\s$/.test(parts[i - 1])) {
+        result += part.trim()
+      } else if (i === 0) {
+        result += part
+      } else {
+        result += part
+      }
+    }
+    return result.replace(/^\n+/, '').trim()
+  }
+
+  // Add proper line breaks
+  formatted = formatted
+    .replace(/\. ([A-Z])/g, '.\n$1')
+    .replace(/: /g, ':\n')
+    .replace(/\n\n+/g, '\n')
+    .replace(/USA /g, 'USA\n')
+
+  return formatted
+}
+
+// Function to render markdown text with bold formatting
+const renderMarkdownText = (text) => {
+  // Split text by ** markers and render bold parts
+  const parts = text.split(/(\*\*.*?\*\*)/g)
+
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      // Remove ** and make bold
+      const boldText = part.slice(2, -2)
+      return <strong key={index}>{boldText}</strong>
+    }
+    return part
+  })
+}
 
 function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
 
-  // Function to format bot response text for better readability
-  const formatBotResponse = (text) => {
-    // Remove markdown formatting
-    let formatted = text
-      .replace(/\*\*/g, '') // Remove markdown asterisks
-      .replace(/\*/g, '')   // Remove single asterisks
-      .trim()
+  const chatContainerRef = useRef(null)
 
-    // Check if this looks like a numbered list response
-    if (formatted.includes('1.') && formatted.includes('2.')) {
-      // Split into sentences and rebuild with proper formatting
-      const parts = formatted.split(/(\d+\.\s)/)
-      let result = ''
-
-      for (let i = 0; i < parts.length; i++) {
-        const part = parts[i]
-
-        // If this is a number marker (1., 2., etc.)
-        if (/^\d+\.\s$/.test(part)) {
-          result += '\n\n' + part
-        }
-        // If this is content after a number
-        else if (i > 0 && /^\d+\.\s$/.test(parts[i - 1])) {
-          result += part
-        }
-        // First part (before any numbers)
-        else if (i === 0) {
-          result += part
-        }
-        // Other parts
-        else {
-          result += part
-        }
-      }
-
-      return result.replace(/^\n+/, '').trim()
-    }
-
-    // For non-list responses, just clean up
-    return formatted
-  }
-
-  // Clean up any old fetch interceptors on mount
-  useEffect(() => {
-    // Restore original fetch if it was intercepted
-    if (window.originalFetch) {
-      window.fetch = window.originalFetch
-      delete window.originalFetch
-    }
-
-    // Clean up any old n8n chat instances
-    if (window.n8nChatInstance) {
-      delete window.n8nChatInstance
-    }
-
-    // Clean up any old message handlers
-    if (window.messageHandler) {
-      delete window.messageHandler
-    }
-
-    console.log('🧹 Cleaned up old chat components')
-  }, [])
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'bot',
-      text: 'Hi! Ask me about Austin ride data. I can show you locations on the map and create charts.',
+      text: 'Yo! 🤘 What\'s the vibe today?\n\nI\'ve got the inside scoop on where Austin gets wild - from late-night taco runs to where the cool kids hang out! 🌮✨',
       timestamp: new Date(),
       showSuggestions: true
     }
   ])
 
-  const sampleQueries = [
-    "what are the top 5 drop-off locations",
-    "Show me the busiest pickup locations",
-    "What are the peak hours for rides?",
+  // Scroll to bottom on new message
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+    }
+  }, [messages])
 
+
+
+
+  const sampleQueries = [
+    "What are the top 5 drop-off locations? 📍",
+    "Show me the busiest pickup spots 🚗",
+    "What are the peak hours for rides? ⏰",
+    "Find popular entertainment destinations 🎵"
   ]
 
   const handleSuggestionClick = (query) => {
@@ -92,6 +96,7 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
       }
     }, 100)
   }
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -108,7 +113,7 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
       timestamp: new Date()
     }
 
-    // Hide suggestions after first user message
+    // Hide suggestions after first user message and add message
     setMessages(prev => {
       const updated = prev.map(msg =>
         msg.showSuggestions ? { ...msg, showSuggestions: false } : msg
@@ -124,18 +129,18 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
     }
     setMessages(prev => [...prev, typingIndicator])
 
-    // Send to n8n webhook using the working format
+    // Send to n8n chat webhook
     try {
       const response = await fetch('/webhook/1203a737-5c17-4c8e-9730-37dc59e8f34e/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Instance-Id': '5c03a30c37683f0cce158d1624c4545432736710298667ae3bf3ee07e668bc12',
+          'X-Instance-Id': 'ba73b045ac7d7333b3dfb3e503856b4f743c88298667ae3bf3ee07e668bc12',
         },
         body: JSON.stringify({
-          action: 'sendMessage',
+          chatInput: currentMessage,
           sessionId: 'web-session-' + Date.now(),
-          chatInput: currentMessage
+          action: 'sendMessage',
         })
       })
 
@@ -145,8 +150,6 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
         // Remove typing indicator and add bot response
         setMessages(prev => {
           const withoutTyping = prev.filter(msg => msg.type !== 'typing')
-
-          // Clean up and format the response text
           const cleanText = formatBotResponse(data.output || data.message || 'Response received successfully.')
 
           const botMessage = {
@@ -184,224 +187,134 @@ function SimpleChatInterface({ onMessageSent, isAnalyzing }) {
   }
 
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: '20px',
-      right: '20px',
-      width: '350px',
-      height: '500px',
-      backgroundColor: 'white',
-      borderRadius: '12px',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-      display: 'flex',
-      flexDirection: 'column',
-      zIndex: 1000,
-      border: '1px solid #e5e7eb'
-    }}>
-      {/* Header */}
-      <div style={{
-        padding: '16px',
-        borderBottom: '1px solid #e5e7eb',
-        backgroundColor: '#f8fafc',
-        borderRadius: '12px 12px 0 0'
-      }}>
-        <h3 style={{
-          margin: 0,
-          fontSize: '16px',
-          fontWeight: '600',
-          color: '#1f2937'
-        }}>
-          Austin Ride Data Assistant
-        </h3>
-        <p style={{
-          margin: '4px 0 0 0',
-          fontSize: '12px',
-          color: '#6b7280'
-        }}>
-          Ask about locations, trips, and patterns
-        </p>
-      </div>
+    <>
+      <div className="chat-interface">
+        {/* Header */}
+        <div className="chat-header">
+          <img
+            src="/fetii-logo.png"
+            alt="Fetii AI"
+            className="chat-logo"
+          />
+        </div>
 
-      {/* Messages */}
-      <div style={{
-        flex: 1,
-        padding: '16px',
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px'
-      }}>
-        {messages.map(msg => (
-          <div
-            key={msg.id}
-            style={{
-              alignSelf: msg.type === 'user' ? 'flex-end' : 'flex-start',
-              maxWidth: '80%'
-            }}
-          >
-            {msg.type === 'typing' ? (
-              <div style={{
-                padding: '10px 14px',
-                borderRadius: '16px 16px 16px 4px',
-                backgroundColor: '#f3f4f6',
-                color: '#1f2937',
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  gap: '3px'
-                }}>
-                  <div style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: '#6b7280',
-                    animation: 'pulse 1.4s infinite ease-in-out'
-                  }}></div>
-                  <div style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: '#6b7280',
-                    animation: 'pulse 1.4s infinite ease-in-out 0.2s'
-                  }}></div>
-                  <div style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: '#6b7280',
-                    animation: 'pulse 1.4s infinite ease-in-out 0.4s'
-                  }}></div>
-                </div>
-                <span style={{ fontSize: '12px', color: '#6b7280' }}>
-                  Thinking...
-                </span>
-              </div>
-            ) : (
-              <>
-                <div style={{
-                  padding: '10px 14px',
-                  borderRadius: msg.type === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                  backgroundColor: msg.type === 'user' ? '#3b82f6' : '#f3f4f6',
-                  color: msg.type === 'user' ? 'white' : '#1f2937',
-                  fontSize: '14px',
-                  lineHeight: '1.4',
-                  whiteSpace: 'pre-line' // This preserves line breaks and formatting
-                }}>
-                  {msg.text}
-                </div>
-                <div style={{
-                  fontSize: '10px',
-                  color: '#9ca3af',
-                  marginTop: '4px',
-                  textAlign: msg.type === 'user' ? 'right' : 'left'
-                }}>
-                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
-
-                {/* Show sample queries for the first bot message */}
-                {msg.showSuggestions && (
-                  <div style={{
-                    marginTop: '12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px'
-                  }}>
-                    <div style={{
-                      fontSize: '12px',
-                      color: '#6b7280',
-                      marginBottom: '4px'
-                    }}>
-                      Try these sample queries:
+        {/* Messages */}
+        <div className="chat-messages" ref={chatContainerRef}>
+          {messages.map(msg => (
+            <div
+              key={msg.id}
+              style={{
+                alignSelf: msg.type === 'user' ? 'flex-end' : 'flex-start',
+                maxWidth: '85%',
+                marginRight: msg.type === 'user' ? '0' : 'auto',
+                marginLeft: msg.type === 'user' ? 'auto' : '0'
+              }}
+            >
+              {msg.type === 'typing' ? (
+                <div className="message bot">
+                  <div className="message-content loading-message" style={{ minWidth: '120px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="typing-indicator">
+                      <span></span>
+                      <span></span>
+                      <span></span>
                     </div>
-                    {sampleQueries.map((query, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleSuggestionClick(query)}
-                        style={{
-                          padding: '8px 12px',
-                          backgroundColor: '#f8fafc',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                          color: '#374151',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          transition: 'all 0.2s',
-                          ':hover': {
-                            backgroundColor: '#f1f5f9',
-                            borderColor: '#3b82f6'
-                          }
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = '#f1f5f9'
-                          e.target.style.borderColor = '#3b82f6'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = '#f8fafc'
-                          e.target.style.borderColor = '#e5e7eb'
-                        }}
-                      >
-                        {query}
-                      </button>
-                    ))}
+                    <span style={{
+                      fontSize: '12px',
+                      background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      whiteSpace: 'nowrap',
+                      fontWeight: '600'
+                    }}>
+                      Thinking...
+                    </span>
                   </div>
-                )}
-              </>
-            )}
-          </div>
-        ))}
+                </div>
+              ) : (
+                <>
+                  <div className={`message ${msg.type}`}>
+                    <div className="message-content">
+                      {renderMarkdownText(msg.text)}
+                    </div>
+                    <div className="message-time">
+                      {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+
+                  {/* Show sample queries for the first bot message */}
+                  {msg.showSuggestions && (
+                    <div style={{
+                      marginTop: '12px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px'
+                    }}>
+                      {sampleQueries.map((query, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleSuggestionClick(query)}
+                          style={{
+                            padding: '12px 16px',
+                            background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                            border: 'none',
+                            borderRadius: '20px',
+                            fontSize: '13px',
+                            color: 'white',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            transition: 'all 0.3s ease',
+                            boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
+                            fontWeight: '500'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.transform = 'translateY(-2px)'
+                            e.target.style.boxShadow = '0 6px 16px rgba(139, 92, 246, 0.4)'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = 'translateY(0)'
+                            e.target.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.3)'
+                          }}
+                        >
+                          {query}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Input */}
+        <form onSubmit={handleSubmit} className="chat-input-form">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Ask about Austin ride data..."
+            disabled={isAnalyzing}
+            className="chat-input"
+          />
+
+          {/* REMOVED CUSTOM VOICE BUTTON */}
+
+          <button
+            type="submit"
+            disabled={!message.trim() || isAnalyzing}
+            className="send-btn"
+          >
+            ➤
+          </button>
+        </form>
 
       </div>
 
-      {/* Input */}
-      <form onSubmit={handleSubmit} style={{
-        padding: '16px',
-        borderTop: '1px solid #e5e7eb',
-        display: 'flex',
-        gap: '8px'
-      }}>
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Ask about Austin ride data..."
-          disabled={isAnalyzing}
-          style={{
-            flex: 1,
-            padding: '10px 12px',
-            border: '1px solid #d1d5db',
-            borderRadius: '20px',
-            outline: 'none',
-            fontSize: '14px',
-            backgroundColor: isAnalyzing ? '#f9fafb' : 'white'
-          }}
-        />
-        <button
-          type="submit"
-          disabled={!message.trim() || isAnalyzing}
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            border: 'none',
-            backgroundColor: message.trim() && !isAnalyzing ? '#3b82f6' : '#d1d5db',
-            color: 'white',
-            cursor: message.trim() && !isAnalyzing ? 'pointer' : 'not-allowed',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '16px'
-          }}
-        >
-          ➤
-        </button>
-      </form>
-    </div>
+
+    </>
   )
+
 }
 
 export default SimpleChatInterface

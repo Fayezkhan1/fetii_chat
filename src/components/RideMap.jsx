@@ -28,15 +28,7 @@ const getCategoryColor = (category) => {
   return colors[category] || '#95a5a6'
 }
 
-const createCustomIcon = (visits) => {
-  const getColor = (visits) => {
-    if (visits >= 200) return '#e74c3c'
-    if (visits >= 150) return '#f39c12'
-    if (visits >= 100) return '#f1c40f'
-    if (visits >= 50) return '#3498db'
-    return '#95a5a6'
-  }
-
+const createCustomIcon = (visits, index) => {
   const getSize = (visits) => {
     if (visits >= 200) return [50, 50]
     if (visits >= 150) return [45, 45]
@@ -45,19 +37,18 @@ const createCustomIcon = (visits) => {
     return [30, 30]
   }
 
-  const color = getColor(visits)
   const [width, height] = getSize(visits)
-  const fontSize = width > 40 ? '14px' : width > 35 ? '13px' : width > 30 ? '12px' : '11px'
-  
+  const fontSize = width > 40 ? '16px' : width > 35 ? '15px' : width > 30 ? '14px' : '13px'
+
   return L.divIcon({
     className: 'custom-marker',
     html: `<div style="
-      background: linear-gradient(135deg, ${color} 0%, ${color}dd 100%);
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
       width: ${width}px;
       height: ${height}px;
       border-radius: 50%;
       border: 3px solid white;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -65,9 +56,9 @@ const createCustomIcon = (visits) => {
       font-weight: bold;
       font-size: ${fontSize};
       position: relative;
-    ">${visits}</div>`,
+    ">${index + 1}</div>`,
     iconSize: [width, height],
-    iconAnchor: [width/2, height/2]
+    iconAnchor: [width / 2, height / 2]
   })
 }
 
@@ -79,8 +70,8 @@ function MapController({ locations, selectedMarkerId, onMarkerFocus, markerRefs 
     // Remove any existing zoom controls from top-left
     const zoomControls = document.querySelectorAll('.leaflet-control-zoom')
     zoomControls.forEach(control => {
-      if (control.parentElement?.classList.contains('leaflet-top') && 
-          control.parentElement?.classList.contains('leaflet-left')) {
+      if (control.parentElement?.classList.contains('leaflet-top') &&
+        control.parentElement?.classList.contains('leaflet-left')) {
         control.remove()
       }
     })
@@ -111,12 +102,12 @@ function MapController({ locations, selectedMarkerId, onMarkerFocus, markerRefs 
             marker.closePopup()
           }
         })
-        
+
         map.setView([selectedLocation.lat, selectedLocation.lng], 15, {
           animate: true,
           duration: 0.8
         })
-        
+
         // Open popup for selected marker after a short delay
         setTimeout(() => {
           const marker = markerRefs.current[selectedMarkerId]
@@ -134,7 +125,7 @@ function MapController({ locations, selectedMarkerId, onMarkerFocus, markerRefs 
 function RideMap({ locations = [], selectedMarkerId, onMarkerFocus }) {
   const austinCenter = [30.2672, -97.7431]
   const markerRefs = useRef([])
-  
+
   return (
     <MapContainer
       center={austinCenter}
@@ -152,15 +143,15 @@ function RideMap({ locations = [], selectedMarkerId, onMarkerFocus }) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      
-      <MapController 
-        locations={locations} 
+
+      <MapController
+        locations={locations}
         selectedMarkerId={selectedMarkerId}
         onMarkerFocus={onMarkerFocus}
         markerRefs={markerRefs}
       />
       <ZoomControl position="bottomleft" />
-      
+
       {locations.map((location, index) => (
         <Marker
           key={index}
@@ -168,7 +159,7 @@ function RideMap({ locations = [], selectedMarkerId, onMarkerFocus }) {
             markerRefs.current[index] = ref
           }}
           position={[location.lat, location.lng]}
-          icon={createCustomIcon(location.visits)}
+          icon={createCustomIcon(location.visits, index)}
           eventHandlers={{
             click: () => {
               if (onMarkerFocus) {
@@ -191,25 +182,10 @@ function RideMap({ locations = [], selectedMarkerId, onMarkerFocus }) {
         >
           <Popup closeButton={false} autoClose={false} closeOnClick={false}>
             <div className="location-popup">
-              <h3>{location.name || 'Location'}</h3>
-              <p style={{ margin: '0.5rem 0', color: '#666', fontSize: '0.9rem' }}>
+              <h3 style={{ margin: '0 0 0.5rem 0', textAlign: 'center' }}>{location.name || 'Location'}</h3>
+              <p style={{ margin: '0', color: '#666', fontSize: '0.9rem', textAlign: 'center' }}>
                 {location.address}
               </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                {location.category && (
-                  <span style={{ 
-                    background: getCategoryColor(location.category), 
-                    color: 'white', 
-                    padding: '0.2rem 0.5rem', 
-                    borderRadius: '12px', 
-                    fontSize: '0.7rem',
-                    textTransform: 'uppercase'
-                  }}>
-                    {location.category}
-                  </span>
-                )}
-                <div className="visit-count">{location.visits} visits</div>
-              </div>
             </div>
           </Popup>
         </Marker>

@@ -48,114 +48,101 @@ function App() {
 
   return (
     <div className="app">
-      <header className="header">
-        <h1>Fetii AI</h1>
-      </header>
-
-      <div className="main-content" style={{ height: 'calc(100vh - 80px)' }}>
+      <div className="main-content" style={{ height: '100vh' }}>
 
 
         <div className="map-container" style={{ 
           width: '100%', 
           height: '100%',
-          position: 'relative'
+          position: 'relative',
+          marginLeft: '400px' // Make space for left-positioned chat
         }}>
-          {/* Horizontal Marker Bar */}
+          {/* Bottom Location Cards */}
           {mapLocations.length > 0 && (
-            <div style={{
-              position: 'absolute',
-              top: '20px',
-              left: '20px',
-              right: '20px',
-              zIndex: 1000,
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: '12px',
-              padding: '16px',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-              backdropFilter: 'blur(10px)'
-            }}>
-              <div style={{
+            <div 
+              className="bottom-cards-container"
+              style={{
+                position: 'absolute',
+                top: '20px',
+                left: '20px',
+                right: '20px',
+                zIndex: 1000,
                 display: 'flex',
+                gap: '16px',
                 overflowX: 'auto',
-                gap: '12px',
-                paddingBottom: '4px'
+                overflowY: 'hidden',
+                paddingBottom: '8px',
+                paddingTop: '8px',
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(139, 92, 246, 0.5) transparent'
               }}>
-                {mapLocations.map((location, index) => (
-                  <div
-                    key={index}
-                    onClick={() => handleMarkerClick(index)}
-                    style={{
-                      minWidth: '200px',
-                      backgroundColor: selectedMarkerId === index ? '#4CAF50' : 'white',
-                      color: selectedMarkerId === index ? 'white' : '#333',
-                      border: selectedMarkerId === index ? '2px solid #4CAF50' : '2px solid #e5e7eb',
-                      borderRadius: '8px',
-                      padding: '12px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      boxShadow: selectedMarkerId === index ? '0 4px 12px rgba(76, 175, 80, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (selectedMarkerId !== index) {
-                        e.target.style.borderColor = '#4CAF50'
-                        e.target.style.transform = 'translateY(-2px)'
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (selectedMarkerId !== index) {
-                        e.target.style.borderColor = '#e5e7eb'
-                        e.target.style.transform = 'translateY(0)'
-                      }
-                    }}
-                  >
-                    <div style={{
-                      fontWeight: '600',
-                      fontSize: '14px',
-                      marginBottom: '4px',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}>
-                      {location.name || 'Location'}
-                    </div>
-                    <div style={{
-                      fontSize: '12px',
-                      opacity: 0.8,
-                      marginBottom: '6px',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}>
-                      {location.address}
-                    </div>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
-                    }}>
-                      {location.category && (
-                        <span style={{
-                          backgroundColor: selectedMarkerId === index ? 'rgba(255,255,255,0.2)' : '#f3f4f6',
-                          color: selectedMarkerId === index ? 'white' : '#6b7280',
-                          padding: '2px 8px',
-                          borderRadius: '12px',
-                          fontSize: '10px',
-                          fontWeight: '500',
-                          textTransform: 'uppercase'
-                        }}>
-                          {location.category}
-                        </span>
-                      )}
-                      <span style={{
-                        fontWeight: '600',
-                        fontSize: '12px'
-                      }}>
-                        {location.visits} visits
-                      </span>
-                    </div>
+              {mapLocations.map((location, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleMarkerClick(index)}
+                  style={{
+                    minWidth: '280px',
+                    flexShrink: 0,
+                    background: 'rgba(15, 23, 42, 0.7)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.25)',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    color: 'white',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-4px)'
+                    e.target.style.boxShadow = '0 12px 32px rgba(139, 92, 246, 0.3)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0)'
+                    e.target.style.boxShadow = 'none'
+                  }}
+                >
+                  {/* Purple number badge */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '16px',
+                    right: '16px',
+                    width: '32px',
+                    height: '32px',
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    color: 'white'
+                  }}>
+                    {index + 1}
                   </div>
-                ))}
-              </div>
+                  
+                  <div style={{
+                    fontWeight: '700',
+                    fontSize: '18px',
+                    marginBottom: '8px',
+                    paddingRight: '40px',
+                    textAlign: 'center'
+                  }}>
+                    {location.name || 'Location'}
+                  </div>
+                  
+                  <div style={{
+                    fontSize: '14px',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    textAlign: 'center'
+                  }}>
+                    {location.address}
+                  </div>
+                  
+
+                </div>
+              ))}
             </div>
           )}
           
@@ -181,18 +168,19 @@ function App() {
               backdropFilter: 'blur(2px)'
             }}>
               <div style={{
-                backgroundColor: 'white',
+                background: 'rgba(15, 23, 42, 0.9)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(139, 92, 246, 0.3)',
                 padding: '32px 40px',
                 borderRadius: '16px',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+                boxShadow: '0 20px 60px rgba(139, 92, 246, 0.3)',
                 textAlign: 'center',
-                maxWidth: '400px',
-                border: '1px solid #e5e7eb'
+                maxWidth: '400px'
               }}>
                 <div style={{
                   fontSize: '18px',
                   fontWeight: '600',
-                  color: '#1f2937',
+                  color: 'white',
                   marginBottom: '16px',
                   lineHeight: '1.4'
                 }}>
@@ -210,28 +198,28 @@ function App() {
                     width: '12px',
                     height: '12px',
                     borderRadius: '50%',
-                    backgroundColor: '#3b82f6',
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
                     animation: 'bounce 1.4s infinite ease-in-out'
                   }}></div>
                   <div style={{
                     width: '12px',
                     height: '12px',
                     borderRadius: '50%',
-                    backgroundColor: '#3b82f6',
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
                     animation: 'bounce 1.4s infinite ease-in-out 0.2s'
                   }}></div>
                   <div style={{
                     width: '12px',
                     height: '12px',
                     borderRadius: '50%',
-                    backgroundColor: '#3b82f6',
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
                     animation: 'bounce 1.4s infinite ease-in-out 0.4s'
                   }}></div>
                 </div>
 
                 <div style={{
                   fontSize: '14px',
-                  color: '#6b7280',
+                  color: 'rgba(255, 255, 255, 0.7)',
                   marginTop: '12px'
                 }}>
                   Analyzing data and geocoding locations...
